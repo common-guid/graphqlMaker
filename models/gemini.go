@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/genai"
 )
 
@@ -20,8 +21,21 @@ func NewGemini(system, message string) *Gemini {
 }
 
 func (g *Gemini) SendMessage() (string, error) {
+	env, err := godotenv.Read(".env")
+	if err != nil {
+		return "", fmt.Errorf("error reading .env file from current directory: %w", err)
+	}
+
+	apiKey, ok := env["GEMINI_API_KEY"]
+	if !ok || apiKey == "" {
+		return "", fmt.Errorf("GEMINI_API_KEY not found or is empty in .env file")
+	}
+
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, nil)
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
 		return "", err
 	}

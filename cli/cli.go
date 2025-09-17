@@ -3,10 +3,8 @@ package cli
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"github.com/xssdoctor/graphqlMaker/flags"
 	"github.com/xssdoctor/graphqlMaker/models"
 	"github.com/xssdoctor/graphqlMaker/parse"
@@ -19,8 +17,6 @@ type Model interface {
 func Cli() error {
 	var resultArray []string
 	var err error
-	envFile := filepath.Join(".env")
-	godotenv.Load(envFile)
 	Flags, err := flags.Init()
 	if err != nil {
 		return err
@@ -91,7 +87,6 @@ mutation {
 
 		var model Model
 		if Flags.Model == "gemini" {
-			os.Setenv("GOOGLE_API_KEY", os.Getenv("GEMINI_API_KEY"))
 			model = models.NewGemini(system, message)
 		} else {
 			model = models.NewOpenAi(os.Getenv("OPENAI_API_KEY"), system, message)
