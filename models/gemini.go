@@ -40,7 +40,7 @@ func (g *Gemini) SendMessage() (string, error) {
 		return "", err
 	}
 
-	resp, err := client.Models.GenerateContent(ctx, "gemini-pro", genai.Text(g.System+"\n"+g.Message), nil)
+	resp, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", genai.Text(g.System+"\n"+g.Message), nil)
 	if err != nil {
 		return "", err
 	}
