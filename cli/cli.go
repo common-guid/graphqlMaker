@@ -12,7 +12,11 @@ import (
 	"github.com/xssdoctor/graphqlMaker/parse"
 )
 
-func Cli()(error){
+type Model interface {
+	SendMessage() (string, error)
+}
+
+func Cli() error {
 	var resultArray []string
 	var err error
 	envFile := filepath.Join(".env")
@@ -27,8 +31,8 @@ func Cli()(error){
 			return err
 		}
 		message := strings.Join(resultArray, "\n")
-	system  := `
-	# IDENTITY AND PURPOSE
+		system := `
+# IDENTITY AND PURPOSE
 
 You are an expert software developer specializing in converting JavaScript code that makes API calls into corresponding GraphQL queries or mutations. Your role is to assist developers in translating their JavaScript code into the appropriate GraphQL syntax.
 
@@ -85,16 +89,20 @@ mutation {
 	}
   }`
 
-		
-		
-	
-	oai := models.NewOpenAi(os.Getenv("OPENAI_API_KEY"), system, message)
-	response, err := oai.SendMessage()
-	if err != nil {
-		return err
-	}
-	fmt.Println(response)
-	return nil
+		var model Model
+		if Flags.Model == "gemini" {
+			os.Setenv("GOOGLE_API_KEY", os.Getenv("GEMINI_API_KEY"))
+			model = models.NewGemini(system, message)
+		} else {
+			model = models.NewOpenAi(os.Getenv("OPENAI_API_KEY"), system, message)
+		}
+
+		response, err := model.SendMessage()
+		if err != nil {
+			return err
+		}
+		fmt.Println(response)
+		return nil
 	}
 	if Flags.Folder != "" {
 		err = parse.FindPatternsFromFolder(Flags.Folder)
